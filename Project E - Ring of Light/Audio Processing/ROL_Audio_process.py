@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 data_final = []
 length = 90
-bin_len = 0.1
+bin_len = 0.5
 
 def bin_em(data):
     data_final = []

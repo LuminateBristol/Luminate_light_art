@@ -15,7 +15,7 @@
  class Luminate_WP {
   public:
     #define NUM_LEDS 140
-    #define LED_PIN 5
+    #define LED_PIN 4
     CRGB leds[NUM_LEDS];
     byte saturation = 230;
 
@@ -48,7 +48,7 @@
     /* Function 5: Set one pixel to a colour */
 
     void setone(byte pixel_number, byte colour_int, byte brightness) {
-      leds[pixel_number] = CHSV(colour_int, brightness, saturation);
+      leds[pixel_number] = CHSV(colour_int, saturation, brightness);
       FastLED.show();
     }
 
@@ -63,7 +63,7 @@
 
     void setmulti(byte pixel_0, byte pixel_1, byte colour_int, byte brightness) {
       for (byte i = pixel_0; i <= pixel_1; i++) {
-        leds[i] = CHSV(colour_int, brightness, saturation);
+        leds[i] = CHSV(colour_int, saturation, brightness);
       }
       FastLED.show();
     }
