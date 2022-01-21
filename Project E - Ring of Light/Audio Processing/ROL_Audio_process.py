@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 data_final = []
 length = 90
-bin_len = 0.001
+bin_len = 0.1
 
 def bin_em(data):
     data_final = []
@@ -22,33 +22,37 @@ def bin_em(data):
 
 def cleanup(data):
     data_final = []
+    data_norm = data / max(data)
+    for i in range(len(data_norm)):
+        datap = round(data_norm[i]*255, 0)
+        data_final.append(int(datap))
+    return data_final
+
+def py2arduinoarray(data):
+    print("{", end = "")
     for i in range(len(data)):
-        print((data[i]))
-        data_final.append(round(data[i],1))
+        print("{},".format(data[i]), end = " ")
+    print("}")
+    print(len(data))
 
 def main():
 
     # Read WAV file using scipy.io.wavfile into two arrays
     # Note that the data_wav file is the amplitude and is split into stereo (two columns)
     # fs_wav is the sample rate
-    fs_wav, data_wav = wavfile.read("Ring_v2_highs.wav")
+    fs_wav, data_wav = wavfile.read("Ring_v2_lows.wav")
 
     # Trim down to 90 seconds long (for the instabanger)
     data_wav_crop = data_wav[0 : length * fs_wav]
 
-    # Use the fast Fourier transform algorithm to get frequency data - NEEDS MORE RESEARCH
-    # fft_spectrum = np.fft.rfft(time_wav_crop)
-    # freq = np.fft.rfftfreq(data_wav_norm_crop.size, d=1./fs_wav)
-    # fft_spectrum_abs = np.abs(fft_spectrum)
+    # Bin data into larger time bins so there is not too much data to handle in Arduino
+    data_binned = bin_em(abs(data_wav_crop[:,0]))
+    data_clean = cleanup(data_binned)
 
-    data_binned = bin_em(abs(data_wav_norm_crop))
-    #print(int(data_binned[0]))
-    #data_clean = cleanup(data_binned)
-    #print(data_clean)
-
-    plt.plot(range(int(length/bin_len)), data_binned);
+    plt.plot(range(len(data_clean)), data_clean)
     plt.show()
-    print(abs(data_wav_norm_crop))
+
+    py2arduinoarray(data_clean)
 
 if __name__ == '__main__':
     main()
