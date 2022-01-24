@@ -21,10 +21,10 @@ byte low_pixel_two;
 byte high_pixel_one;
 byte high_pixel_two;
 
-int thresh_low = 100; // If data is less than thresh, switch to new location on the ring
+int thresh_low = 80; // If data is less than thresh, switch to new location on the ring
 int thresh_high = 10; // If data is less than thresh, switch to new location on the ring
 
-byte peace_colour = 1;
+
 byte colour_int;
 int ltm;
 int ltmold = 0;
@@ -42,22 +42,17 @@ void loop() {
   if (timenow > timethen + time_int) {
     if (timenow - start_time < drop_time) {  
       ind = int((timenow - start_time) / time_int); // Find the correct array index based on time 
-    
-      Serial.println(ind);
-    
-      light_lows(ind);
-      delay(100);
       light_highs(ind);
+      light_lows(ind);
       timethen = timenow;
-      Serial.println(timenow - start_time);
-      //Serial.println(data_lows[ind]);
-      //Serial.println("");
+      //Serial.println(timenow - start_time);
     } else {
-      peaceandcalm();
+      ind = int((timenow - start_time) / time_int); // Find the correct array index based on time 
+      peaceandcalm(ind);
     }
   }
   
-  if (timenow - start_time >= 90000) {
+  if (timenow - start_time >= time_int*time_steps) {
     ring_reset();
   }
 }
@@ -72,47 +67,41 @@ void light_lows(int i) {
       ltm = 0;
     }   
     int a = ltmold - ltm;
-    if (a == 1) {  
-       
+    ltmold = ltm;  
+    if (a == 1) {         
       colour_int = random(0, 255);  // Random colour choice - HSV spectrum
-      ringleds.alloff();
-      low_pixel_one = random(0, NUM_LEDS);
-      low_pixel_two = low_pixel_one + 15;    
-    }
-    else if (a == -1) {     
-      ringleds.setmulti(low_pixel_one, low_pixel_two, colour_int, 200);
-      Serial.println("YEP"); 
-    }
-
-    ltmold = ltm;
+    }    
+    
+    ringleds.setall(colour_int, data_lows[i]/3.5); 
 }
 
 /* Function 2: Turn on the LEDs related to high frequency sounds */
-void light_highs(int i) {
-  if (timenow - start_time < drop_time) {
-    
-
-    if (data_highs[i] > thresh_high) {  
-      high_pixel_one = random(0, NUM_LEDS);
-      high_pixel_two = high_pixel_one + 2;
-      ringleds.setmulti(high_pixel_one, high_pixel_two, 140, 200);
-    }
-    ringleds.setmulti(high_pixel_one, high_pixel_two, 140, 0);
+void light_highs(int i) { 
+  if (data_highs[i] > thresh_high) {  
+    high_pixel_one = random(0, NUM_LEDS);
+    high_pixel_two = high_pixel_one + 5;
+    ringleds.setmulti(high_pixel_one, high_pixel_two, 140, 250);
   }
+  ringleds.setmulti(high_pixel_one, high_pixel_two, colour_int, data_lows[i]/3.5); // Revert previously turned on LEDs
 }
 
 /* Function 3: When the sh*tstorm is over, we have peace and calm */
-void peaceandcalm() {
-  int t = 300;
-  if (timenow > timethen + t) {
-    if (peace_colour < 255) {
-      peace_colour++;
-    } else {
-      peace_colour--;
+void peaceandcalm(int i) {
+  if (data_lows[i] > thresh_low) {     
+      ltm = 1;
     }
-    ringleds.setall(peace_colour, 250);
-  }
+    else if (data_lows[i] < thresh_low) {
+      ltm = 0;
+    }   
+    int a = ltmold - ltm;
+    ltmold = ltm;  
+    if (a == 1) {         
+      colour_int = colour_int+20;  // Random colour choice - HSV spectrum
+    }    
+    
+    ringleds.setall(colour_int, data_lows[i]/2); 
 }
+
 
 /* Function 4: Reset the Ring to begninning, wait 2 seconds before restart */
 void ring_reset() {

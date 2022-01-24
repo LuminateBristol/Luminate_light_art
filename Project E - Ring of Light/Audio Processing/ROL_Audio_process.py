@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 data_final = []
 length = 90
-bin_len = 0.5
+bin_len = 0.1
 
 def bin_em(data):
     data_final = []
@@ -53,6 +53,7 @@ def main():
     plt.show()
 
     py2arduinoarray(data_clean)
+    print(data_clean[60])
 
 if __name__ == '__main__':
     main()
